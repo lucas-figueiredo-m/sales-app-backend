@@ -1,0 +1,113 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "postgres"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../../../node_modules/.prisma/client"
+  // output   = "../../../../../node_modules/.prisma/client"
+}
+
+enum ProductCategory {
+  BOVINE
+  SWINE
+  CHICKEN
+  GIBLETS
+}
+
+enum ClientType {
+  SMALL_BUSINESS
+  LARGE_BUSINESS
+}
+
+model Employee {
+  server_id  Int      @id @default(autoincrement())
+  id         String?
+  first_name String
+  last_name  String
+  email      String   @unique
+  phone      String   @unique
+  password   String
+  clients    Client[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model Client {
+  server_id        Int        @id @default(autoincrement())
+  id               String?
+  employee_id      Int
+  employee         Employee   @relation(fields: [employee_id], references: [server_id])
+  company_name     String
+  trade_name       String
+  taxpayer_id      String     @unique
+  type             ClientType
+  buyer_first_name String
+  buyer_last_name  String
+  phone            String
+  address          String
+  number           String
+  complement       String
+  zip_code         String
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @default(now()) @updatedAt
+  Orders           Orders[]
+  active           Boolean    @default(true)
+}
+
+model Products {
+  server_id                Int                      @id @default(autoincrement())
+  id                       String?
+  name                     String
+  price                    Int
+  category                 ProductCategory
+  type                     ClientType
+  historical_product_price HistoricalProductPrice[]
+  created_at               DateTime                 @default(now())
+  updated_at               DateTime                 @default(now()) @updatedAt
+  order_items              OrderItems[]
+
+  @@index([category], type: BTree)
+}
+
+model HistoricalProductPrice {
+  server_id  Int      @id @default(autoincrement())
+  id         String
+  product_id Int
+  product    Products @relation(fields: [product_id], references: [server_id])
+  price      Int
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model Orders {
+  server_id             Int          @id @default(autoincrement())
+  id                    String?
+  client_id             Int
+  client                Client       @relation(fields: [client_id], references: [server_id])
+  status                String // CREATED - SENT - IN-PREPARATION - IN-TRANSIT - DELIVERED
+  estimated_order_price Float
+  order_total_price     Int?
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @default(now()) @updatedAt
+  order_items           OrderItems[]
+}
+
+model OrderItems {
+  server_id                     Int      @id @default(autoincrement())
+  id                            String?
+  order_id                      Int
+  order                         Orders   @relation(fields: [order_id], references: [server_id], onDelete: Cascade)
+  product_id                    Int
+  products                      Products @relation(fields: [product_id], references: [server_id], onDelete: Cascade)
+  table_price                   Int
+  negotiated_price              Int
+  ordered_weight_in_grams       Int
+  delivered_weight_in_grams     Int?
+  estimated_product_total_price Float
+  product_total_price           Int?
+  notes                         String   @default("")
+  created_at                    DateTime @default(now())
+  updated_at                    DateTime @default(now()) @updatedAt
+}

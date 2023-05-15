@@ -10,6 +10,14 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@salesapp/clients": ["./src/clients"],
+      "@salesapp/employees": ["./src/employees"],
+      "@salesapp/modules": ["./src/modules"],
+      "@salesapp/services": ["./src/services"],
+      "@salesapp/types": ["./src/types"],
+      "@salesapp/utils": ["./src/utils"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
